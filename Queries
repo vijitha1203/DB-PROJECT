@@ -1,0 +1,104 @@
+CREATE TABLE roles (
+id INT PRIMARY KEY AUTO_INCREMENT,
+name VARCHAR(50) NOT NULL,
+UNIQUE KEY (name)
+);
+CREATE TABLE departments (
+id INT PRIMARY KEY AUTO_INCREMENT,
+name VARCHAR(50) NOT NULL,
+UNIQUE KEY (name)
+);
+CREATE TABLE designations (
+id INT PRIMARY KEY AUTO_INCREMENT,
+name VARCHAR(50) NOT NULL,
+increment_amount DECIMAL(10, 2) NOT NULL,
+amount_per_hr DECIMAL(10, 2) NOT NULL,
+UNIQUE KEY (name)
+);
+CREATE TABLE users (
+id INT PRIMARY KEY AUTO_INCREMENT,
+username VARCHAR(20) NOT NULL,
+password BINARY(60) NOT NULL,
+email VARCHAR(100) NOT NULL,
+first_name VARCHAR(50) NOT NULL,
+middle_name VARCHAR(50),
+last_name VARCHAR(50) NOT NULL,
+role_id INT NOT NULL,
+department_id INT NOT NULL,
+designation_id INT NOT NULL,
+leave_balance INT NOT NULL,
+joining_date DATE NOT NULL,
+status VARCHAR(20) DEFAULT 'active',
+UNIQUE KEY (username, email),
+FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
+FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE CASCADE,
+FOREIGN KEY (designation_id) REFERENCES designations(id) ON DELETE CASCADE
+);
+CREATE TABLE leaves (
+id INT PRIMARY KEY AUTO_INCREMENT,
+user_id INT NOT NULL,
+start_date DATE NOT NULL,
+end_date DATE NOT NULL,
+status VARCHAR(50) NOT NULL,
+leave_type VARCHAR(50) NOT NULL,
+description TEXT,
+FOREIGN KEY (user_id) REFERENCES users(id),
+INDEX user_idx (user_id)
+);
+CREATE TABLE paycheck (
+id INT PRIMARY KEY AUTO_INCREMENT,
+user_id INT NOT NULL,
+pay_period_start DATE NOT NULL,
+pay_period_end DATE NOT NULL,
+amount FLOAT NOT NULL,
+FOREIGN KEY (user_id) REFERENCES users(id)
+);
+CREATE TABLE pay_period (
+id INT PRIMARY KEY AUTO_INCREMENT,
+start_date DATE NOT NULL,
+end_date DATE NOT NULL,
+payroll_month INT NOT NULL,
+payroll_year INT NOT NULL,
+status VARCHAR(20) DEFAULT 'open'
+);
+CREATE TABLE attendance (
+id INT PRIMARY KEY AUTO_INCREMENT,
+user_id INT NOT NULL,
+attendance_date DATE NOT NULL,
+check_in_time TIME NOT NULL,
+check_out_time TIME,
+hours_worked DECIMAL(5, 2),
+status VARCHAR(50) NOT NULL,
+FOREIGN KEY (user_id) REFERENCES users(id),
+CHECK (check_in_time <= check_out_time),
+INDEX user_date_idx (user_id, attendance_date)
+);
+Some sample queries for our university payroll management system.
+INSERT INTO designations (name, increment_amount, amount_per_hr) VALUES
+('Professor', 100.00, 50.00),
+('Assistant Professor', 80.00, 40.00);
+INSERT INTO departments (name) VALUES
+('Computer Science'),
+('Agriculture');
+INSERT INTO roles (name) VALUES
+('Administrator'),
+('Faculty');
+INSERT INTO users (username, password, email, first_name, last_name, role_id, department_id,
+designation_id, leave_balance, joining_date)
+VALUES
+('sara_jones', 'password567', 'sara.jones@example.com', 'Sara', 'Jones', 3, 3, 3, 25, '2022-04-01'),
+('jason_lee', 'password123', 'jason.lee@example.com', 'Jason', 'Lee', 1, 1, 1, 30, '2022-05-01');
+INSERT INTO leaves (user_id, start_date, end_date, status, leave_type, description)
+VALUES
+(1, '2023-06-01', '2023-06-03', 'pending', 'annual', 'Family vacation'),
+(2, '2023-05-15', '2023-05-15', 'approved', 'sick', 'Doctor appointment');
+INSERT INTO pay_period (start_date, end_date, payroll_month, payroll_year, status)
+VALUES ('2022-01-01', '2022-01-31', 1, 2022, 'closed');
+INSERT INTO pay_period (start_date, end_date, payroll_month, payroll_year, status)
+VALUES ('2022-02-01', '2022-02-28', 2, 2022, 'closed');
+INSERT INTO attendance (user_id, attendance_date, check_in_time, check_out_time,
+hours_worked, status)
+VALUES (5, '2023-05-01', '09:00:00', '17:00:00', 8, 'present');
+INSERT INTO attendance (user_id, attendance_date, check_in_time, check_out_time,
+hours_worked, status)
+VALUES (6, '2023-05-01', '09:30:00', '16:30:00', 7, 'present');
